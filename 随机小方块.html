@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .box {
+            width: 400px;
+            height: 400px;
+            background-color: #cccccc;
+            position: relative;
+        }
+        .small{
+            width: 50px;
+            height: 50px;
+            background-color: green;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+<div id="box" class="box"></div>
+<script>
+    var div = document.createElement("div");
+    var box = document.getElementById("box");
+    box.appendChild(div);
+    div.className="small";
+    (function (window) {
+        function Random() {
+            this.top = Math.floor(Math.random() * 351);
+            this.left = Math.floor(Math.random() * 351);
+        }
+
+        window.random = Random;
+    })(window);
+
+    var random=new random();
+    console.log(random);
+    div.style.left=random.left+"px";
+    div.style.top=random.top+"px";
+</script>
+</body>
+</html>

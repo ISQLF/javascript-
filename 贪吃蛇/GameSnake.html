@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .map {
+            width: 800px;
+            height: 600px;
+            background-color: #CCC;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div class="map">
+
+</div>
+<script>
+    //自调用函数-----》food对象的封装
+    ((function () {
+        var element = [];
+        //Food构造函数
+        function Food(width, height, color, x, y) {
+            this.width = width || 20;
+            this.height = height || 20;
+            this.color = color || "green";
+            this.x = x || 0;
+            this.y = y || 0;
+        }
+
+        //给原型添加产生食物函数
+        Food.prototype.init = function (map) {
+            //删除前面的
+            remove();
+            var div = document.createElement("div");
+            map.appendChild(div);
+            //存入数组，以便删除
+            element.push(div);
+            //样式设置
+            div.style.width = this.width + "px";
+            div.style.height = this.height + "px";
+            div.style.backgroundColor = this.color;
+            //脱离文档流
+            div.style.position = "absolute";
+            this.x = parseInt(Math.random() * map.offsetWidth / this.width)
+                * this.width;
+            this.y = parseInt(Math.random() * map.offsetHeight / this.height)
+                * this.height;
+            div.style.left = this.x + "px";
+            div.style.top = this.y + "px";
+        }
+
+        //每初始化一个food,删除前面的
+        function remove() {
+            for (var i = 0; i < element.length; i++) {
+                //找到这个子元素的父级元素,然后删除这个子元素
+                element[i].parentNode.removeChild(element[i]);
+                //再次把elements中的这个子元素也要删除
+                element.splice(i, 1);
+            }
+        }
+
+        //把Food对象给window
+        window.Food = Food;
+    })());
+    //自调用函数-----》Snake对象的封装
+    ((function () {
+        //存放创建出来的蛇
+        var element = [];
+        //Snake构造函数
+        function Snake(width, height, direct) {
+            this.width = width || 20;
+            this.height = height || 20;
+            this.body = [
+                {x: 3, y: 2, color: "red"},//0
+                {x: 2, y: 2, color: "orange"},//1
+                {x: 1, y: 2, color: "orange"}//2
+            ];
+            this.direct = direct || "right";
+        }
+
+        //给原型添加产生蛇的函数
+        Snake.prototype.init = function (map) {
+            //先删除之前的
+            // 因为--->移动，实际上是改变body的坐标和个数（move）之后
+            // 再产生(init)一条蛇
+            remove();
+            for (var i = 0; i < this.body.length; i++) {
+                var div = document.createElement("div");
+                map.appendChild(div);
+                //脱离文档流
+                div.style.position = "absolute";
+                //样式设置
+                div.style.width = this.width + "px";
+                div.style.height = this.height + "px";
+                div.style.left = this.body[i].x * this.width + "px";
+                div.style.top = this.body[i].y * this.height + "px";
+                div.style.backgroundColor = this.body[i].color;
+                //把创建的部分放进element，以便删除
+                element.push(div);
+            }
+        }
+
+        //给原型添加蛇移动的函数--->实际就是重新设置body的坐标值
+        Snake.prototype.move = function (food, map) {
+            //改变小蛇的身体的坐标位置
+            var i = this.body.length - 1;//2
+            for (; i > 0; i--) {
+                this.body[i].x = this.body[i - 1].x;
+                this.body[i].y = this.body[i - 1].y;
+            }
+            // //判断方向---改变小蛇的头的坐标位置
+            switch (this.direct) {
+                case"left":
+                    this.body[0].x -= 1;
+                    break;
+                case"right":
+                    this.body[0].x += 1;
+                    break;
+                case"top":
+                    this.body[0].y -= 1;
+                    break;
+                case"bottom":
+                    this.body[0].y += 1;
+                    break;
+            }
+
+            //判断有没有吃到食物
+            //小蛇的头的坐标和食物的坐标一致
+            var headX=this.body[0].x*this.width;
+            var headY=this.body[0].y*this.height;
+            if(headX==food.x&&headY==food.y){
+                //获取小蛇的最后的尾巴
+                var last=this.body[this.body.length-1];
+                //把最后的蛇尾复制一个,重新的加入到小蛇的body中,假装吃了
+                this.body.push({
+                    x:last.x,
+                    y:last.y,
+                    color:last.color
+                });
+                //先init食物（里面包含了删除在创建一个食物）
+                food.init(map);
+            }
+        }
+
+        //删除创建的蛇
+        function remove() {
+            //删除map中的小蛇的每个div,同时删除elements数组中的每个元素,从蛇尾向蛇头方向删除div
+            var i = element.length - 1;
+            for (; i >= 0; i--) {
+                //先从当前的子元素中找到该子元素的父级元素,然后再弄死这个子元素
+                var ele = element[i];
+                //从map地图上删除这个子元素div
+                ele.parentNode.removeChild(ele);
+                element.splice(i, 1);
+            }
+        }
+
+        //把Snake挂载到window上
+        window.Snake = Snake;
+    })());
+    var map = document.querySelector(".map")
+    var food = new Food();
+    food.init(map);
+    var snake = new Snake();
+    snake.init(map);
+    var timeId = setInterval(function () {
+        document.onkeydown=function (e) {
+            switch(e.keyCode){
+                case 37:snake.direct="left";break;
+                case 38:snake.direct="top";break;
+                case 39:snake.direct="right";break;
+                case 40:snake.direct="bottom";break;
+            }
+        }
+        snake.move(food,map);
+        snake.init(map);
+        //设置游戏结束
+        if (snake.body[0].x >= map.offsetWidth / snake.width ||
+            snake.body[0].y >= map.offsetHeight / snake.height ||
+            snake.body[0].x < 0 || snake.body[0].y < 0) {
+            clearInterval(timeId);
+            alert("游戏结束");
+        }
+    }, 150);
+
+</script>
+</body>
+
+</html>

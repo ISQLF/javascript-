@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        img{
+            width: 300px;
+            height: 200px;
+            vertical-align: top;
+        }
+        ul{
+            list-style: none;
+            width: 1500px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            padding-left: 0;
+            margin: 0;
+        }
+        li{
+            float: left;
+        }
+        .box{
+            width: 300px;
+            height: 200px;
+            margin: 100px auto;
+            border: 1px solid red;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn{
+            width: 100%;
+            height: 40px;
+            margin-top: 180px;
+            position:absolute;
+            z-index: 1;
+            display: block;
+        }
+        .btnSpan{
+            display: block;
+            float: left;
+            width:20px;
+            height:20px;
+            text-align: center;
+            font-size: large;
+            line-height: 20px;
+            background-color: white;
+            color: dimgrey;
+            margin-left: 3px;
+        }
+        .sign{
+            width: 100%;
+            height: 40px;
+            margin-top: 85px;
+            display: none;
+            position:absolute;
+        }
+        .left{
+            float: left;
+        }
+        .right{
+            float: right;
+        }
+        .sign span{
+            display: block;
+            width:20px;
+            height:40px;
+            text-align: center;
+            font-size: large;
+            line-height: 40px;
+            background-color: darkgrey;
+            opacity: 0.5;
+            color: dimgrey;
+        }
+
+    </style>
+
+
+</head>
+<body>
+<div id="box" class="box">
+    <ul>
+        <li><img src="images/11.jpg"></li>
+        <li><img src="images/12.jpg"></li>
+        <li><img src="images/13.jpg"></li>
+        <li><img src="images/14.jpg"></li>
+
+    </ul>
+    <div class="sign">
+        <span class="left"><</span>
+        <span class="right">></span>
+    </div>
+    <div id="btn" class="btn">
+
+    </div>
+
+</div>
+
+<script src="common.js"></script>
+<script>
+    var box=my$("box");
+    var sign=box.getElementsByClassName("sign")[0];
+    var arrows=sign.getElementsByTagName("span");
+    var ul=box.getElementsByTagName("ul")[0];
+    var lis=ul.getElementsByTagName("li");
+    var btnSpans=my$("btn").getElementsByTagName("span");
+    var imgWidth=my$("box").clientWidth;
+    var currentIndex;
+    var timeId;
+    //按钮创建
+    for(var i=0;i<lis.length;i++)
+    {
+        var btnSpan=document.createElement("span");
+        my$("btn").appendChild(btnSpan);
+        btnSpan.className="btnSpan";
+        btnSpan.innerHTML=""+(i+1)+"";
+        btnSpan.setAttribute("index",i);
+    }
+    //鼠标在按钮上的图片移动事件
+    for(var i=0;i<btnSpans.length;i++){
+        btnSpans[0].style.backgroundColor="red";
+        currentIndex=btnSpans[0].getAttribute("index");
+        btnSpans[i].onmousemove=function () {
+            for(var j=0;j<btnSpans.length;j++){
+                btnSpans[j].style.backgroundColor="white";
+            }
+            this.style.backgroundColor="red";
+            currentIndex=this.getAttribute("index");
+            var target=currentIndex*imgWidth;
+            animate(ul,-target);
+        }
+    }
+    //箭头的左右移动
+    //创建最后一张与第一张也一样的图
+    var lastLis=lis[0].cloneNode(true);
+    ul.appendChild(lastLis);
+    //左箭头函数
+    arrowAnimate(arrows[0]);
+    //右箭头函数
+    arrowAnimate(arrows[1]);
+
+    //封装左右箭头点击移动函数
+    function arrowAnimate(ele){
+        ele.onclick=function () {
+            var NextIndex=parseInt(currentIndex)+1;
+            //无缝链接
+            if(NextIndex==lis.length){
+                NextIndex=0;
+                ul.style.left=0+"px";
+                NextIndex++;
+            }
+            //下一张图的目标位置
+            var target=NextIndex*imgWidth;
+            //小按钮的颜色设置
+            for(var j=0;j<btnSpans.length;j++){
+                btnSpans[j].style.backgroundColor="white";
+            }
+            if(NextIndex<lis.length-1){
+                btnSpans[NextIndex].style.backgroundColor="red"
+            }
+            if(NextIndex==lis.length-1){//当是隐藏的第五张时，第一个按钮红
+                btnSpans[0].style.backgroundColor="red"
+            }
+            animate(ul,-target);
+            //切换后设置当前索引
+            currentIndex=NextIndex;
+        }
+    }
+    //移动到指定位置的动画封装函数
+    function animate(ele,target) {
+        clearInterval(ele.timeId);
+        ele.timeId=setInterval(function () {
+            //每次移动步数
+            var step=10;
+            //当前位置
+            var current=ele.offsetLeft;
+            step=current<target?step:-step;
+            //移动后的位置
+            current+=step;
+            if(Math.abs(target-current)>Math.abs(step))
+            {
+                ele.style.left=current+"px";
+            }else{
+                ele.style.left=target+"px";
+                clearInterval(ele.timeId);
+            }
+        },10)
+    }
+    //无缝轮播
+    var timeId=setInterval(Carousel,3000);
+
+    my$("box").onmousemove=function () {
+        //左右箭头的显示
+        sign.style.display="block";
+        //移入鼠标停止播放
+        var lastLeft=Math.abs(Math.round(ul.offsetLeft/100)*100);
+        //console.log(lastLeft);
+        var arrLeft=[0,300,600,900,1200];
+        clearInterval(timeId);
+        for(var i=0;i<arrLeft.length;i++){
+            if(Math.abs(lastLeft-arrLeft[i])==100){
+                ul.style.left=-arrLeft[i]+"px";
+            }
+        }
+    }
+
+    my$("box").onmouseout=function () {
+        //左右箭头隐藏
+        sign.style.display="none";
+        //移出继续播放i
+        timeId=setInterval(Carousel,3000)
+    }
+    //轮播图移动函数
+    function Carousel(step) {
+        //当前的位置
+        var current=ul.offsetLeft;
+        //移动的步数
+         var step=-300;
+        //移动后应处位置
+        current+=step;
+
+        var nextIndex=parseInt(currentIndex)+1;
+        if(current<-1200){
+            nextIndex=0;
+            ul.style.left=0+"px";
+            current=0;
+            nextIndex++;
+            console.log(nextIndex);
+        }else {
+            ul.style.left=current+"px";
+        }
+        for(var j=0;j<btnSpans.length;j++){
+            btnSpans[j].style.backgroundColor="white";
+        }
+        if(nextIndex<lis.length-1){
+            btnSpans[nextIndex].style.backgroundColor="red"
+        }
+        if(nextIndex==lis.length-1){//当是隐藏的第五张时，第一个按钮红
+            btnSpans[0].style.backgroundColor="red"
+        }
+        currentIndex=nextIndex;
+    }
+</script>
+
+</body>
+</html>

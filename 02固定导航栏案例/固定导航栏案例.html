@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    .contain{
+      margin: 0 auto;
+      /*overflow: auto;*/
+    }
+    .bottom{
+      width: 100%;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .fixed{
+      position: fixed;
+      top:0;
+    }
+  </style>
+</head>
+<body>
+<div class="contain" id="box">
+  <div class="top" id="top">
+    <img src="images/top.png"/>
+  </div>
+  <div class="center" id="center">
+    <img src="images/nav.png" height="83" width="1423"/>
+  </div>
+  <div class="bottom" id="bottom">
+    <img src="images/main.png"/>
+  </div>
+
+</div>
+<script src="common.js"></script>
+<script>
+
+  //获取游览器的scrollTop,scrollLeft
+  function getWinScroll() {
+      return{
+          top:window.pageYOffset||document.body.scrollTop||document.documentElement
+              .scrollTop||0,
+          left:window.pageXOffset||document.body.scrollLeft||document.documentElement
+              .scrollLeft||0
+
+      }
+  }
+  //滚动事件
+  window.onscroll=function () {
+      if(getWinScroll().top>my$("top").offsetHeight){
+          my$("center").className="fixed center";
+          my$("bottom").style.marginTop=my$("center").offsetHeight+"px";
+      }else{
+          my$("center").className="center";
+          my$("bottom").style.marginTop=10+"px";
+      }
+  };
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

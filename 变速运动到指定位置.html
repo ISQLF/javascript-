@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box{
+            width: 300px;
+            height: 100px;
+            background-color: crimson;
+            position: absolute;
+            left:0;
+            opacity:1;
+            top:0;
+        }
+        input{
+            z-index: 10;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+
+</head>
+<body>
+<input type="button" value="滑动400" id="btn1">
+
+<div class="box" id="box"></div>
+
+<script src="common.js"></script>
+<script>
+
+
+
+    //获取任意元素的任意样式
+    function getStyle(ele,arr) {
+        return window.getComputedStyle?window.getComputedStyle(ele,null)[arr]:
+            ele.currentStyle[arr]||0;
+    }
+    console.log(getStyle(my$("box"),"left"));
+    //变速动画函数封装增加任意多个属性
+    json1={
+        "left":400,
+        "height":300,
+        "top":500,
+        "opacity":30
+    }
+    my$("btn1").onclick=function () {
+        animate(my$("box"),json1,function () {
+            json2={
+                "left":0,
+                "height":100,
+                "width":400,
+                "top":0,
+                "zIndex":100,
+                "opacity":100
+            }
+            animate(my$("box"),json2);
+        });
+    }
+    my$("btn2").onclick=function () {
+
+    }
+    function animate(ele,json,fn) {
+        //取消之前的定数器
+        clearInterval(ele.timeId);
+        ele.timeId=setInterval(function () {
+            //当前位置
+            var flag=true;
+            for(var arr in json)
+            {
+                //目标
+                var target=json[arr];
+                var current=getStyle(ele,arr);
+                //如果是层级
+                if(arr=="zIndex"){
+                    ele.style[arr]=target;
+                }
+                //如果是透明度
+                else if(arr=="opacity"){
+                    current=current*100;//0.7*100-->70
+                    //步数
+                    var step=(target-current)/10;   //--->-40
+                    //步数取整
+                    step=step>0?Math.ceil(step):Math.floor(step);
+                    //需移动到的位置
+                    current+=step;
+                    ele.style[arr]=current/100;
+                }
+                //如果是普通的
+                else{
+                    current=parseInt(getStyle(ele,arr));
+                    //步数
+                    var step=(target-current)/10;
+                    //步数取整
+                    step=step>0?Math.ceil(step):Math.floor(step);
+                    //需移动到的位置
+                    current+=step;
+                    ele.style[arr]=current+"px";
+                }
+                if(current!=target){
+                    flag=false
+                }
+            }
+            if(flag){
+                clearInterval(ele.timeId);
+                if(fn){
+                    fn();
+                }
+            }
+        },20)
+    }
+</script>
+</body>
+</html>
